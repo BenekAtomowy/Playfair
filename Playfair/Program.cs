@@ -27,7 +27,7 @@ namespace Playfair
         public char[,] getTab()
         {
             return tab;
-        } 
+        }
         /*   public Playfair(string key)
            {
 
@@ -45,125 +45,116 @@ namespace Playfair
 
 
 
-    }
 
 
 
 
 
-    class Plain
-    {
-        int x1, x2, y1, y2;
-        public char val1, val2;
-        public void find(Playfair cipher)
+        class Plain
         {
-            char[,] tab = cipher.getTab();
-            for (int i = 0; i < 5; i++)
+            int x1, x2, y1, y2;
+            public char val1, val2;
+            public void set1(int i, int j)
             {
-                for (int j = 0; j < 5; j++)
-                {
-                    if (tab[i, j] == val1)
-                    {
-                        x1 = i;
-                        y1 = j;
-                    }
-                }
+                x1 = i;
+                y1 = j;
             }
-            for (int i = 0; i < 5; i++)
+            public void set2(int i, int j)
             {
-                for (int j = 0; j < 5; j++)
-                {
-                    if (tab[i, j] == val2)
-                    {
-                        x2 = i;
-                        y2 = j;
-                    }
-                }
+                x2 = i;
+                y2 = j;
             }
 
-        } 
-        public char getval1()
-        {
-            return val1;
+
+            public char getval1()
+            {
+                return val1;
+            }
+            public char getval2()
+            {
+                return val2;
+            }
         }
-        public char getval2()
+
+
+        class Program
         {
-            return val2;
-        }
-    }
 
-    
-    class Program
-    {
-
-        static string encrypt(String text, Playfair cipher)
-        {
-            ArrayList list = new ArrayList() ;
-            list.Add(text[0]);
-            for (int c = 1; c < text.Length; c++)
+            static string encrypt(String text, Playfair cipher)
             {
-                if(text[c] == text[c -1])
+                ArrayList list = new ArrayList();
+                list.Add(text[0]);
+                for (int c = 1; c < text.Length; c++)
                 {
-                    list.Add('x');
-                    list.Add(text[c - 1]);
-                }
-                else list.Add(text[c]);
-            }
-
-            String plaintext = string.Join("",list.ToArray());
-            Plain plain = new Plain();
-            ArrayList listPlains = new ArrayList();
-
-            for (int c = 0;c<plaintext.Length; c++)
-            {
-                if (c % 2 == 0)
-                {
-                    for (int i = 0; i < 5; i++)
+                    if (text[c] == text[c - 1])
                     {
-                        for (int j = 0; j < 5; j++)
+                        list.Add('x');
+                        list.Add(text[c - 1]);
+                    }
+                    else list.Add(text[c]);
+                }
+
+                String plaintext = string.Join("", list.ToArray());
+                Plain plain = new Plain();
+                List<Plain> listPlains = new List<Plain>();
+                int l;
+                for (int c = 0; c < plaintext.Length; c++)
+                {
+                    if (c % 2 == 0)
+                    {
+                        l = c;
+                        for (int i = 0; i < 5; i++)
                         {
-                            if (plaintext[c] == cipher.getTab()[i, j])
+                            for (int j = 0; j < 5; j++)
                             {
-                                plain.val1 = plaintext[c];
-                                if (plaintext[c + 1] == '\n')
-                                    plain.val2 = 'x';
-                                else
-                                    plain.val2 = plaintext[c+1];
-                                plain.find(cipher);
-                                listPlains.Add(plain);
+                                if (plaintext[c] == cipher.getTab()[i, j])
+                                {
+                                    plain.val1 = plaintext[c];
+                                    plain.set1(i, j);
+                                    if (plaintext[l] == '\n')
+                                        plain.val2 = 'x';
+                                    else
+                                    {
+                                        plain.val2 = plaintext[c + 1];
+                                        plain.set2(i + 1, j + 1);
+                                        
+                                    }
+                                    listPlains.Add(plain);
 
+                                }
                             }
                         }
+                        
                     }
                 }
+                String encryptedString = null;
+
+                foreach (Plain p in listPlains)
+                {
+                    encryptedString = string.Join("", p.val1);
+                    encryptedString = string.Join("", p.val2);
+                }
+
+
+
+                return encryptedString;
             }
-            String encryptedString = null;
-           
-            foreach (Plain p in listPlains)
-            { 
-                encryptedString = string.Join("", p.val1);
-                encryptedString = string.Join("", p.val2);
+
+
+
+
+
+            static void Main(string[] args)
+            {
+                Playfair cipher = new Playfair();
+                cipher.show();
+                Console.WriteLine("\nPodaj napis do zaszyfrowania");
+                string text = Console.ReadLine();
+
+                Console.WriteLine(encrypt(text, cipher));
+
+                Console.ReadKey();
             }
-
-
-
-            return encryptedString;
-        }
-
-
-
-
-
-        static void Main(string[] args)
-        {
-            Playfair cipher = new Playfair();
-            cipher.show();
-            Console.WriteLine("\nPodaj napis do zaszyfrowania");
-            string text = Console.ReadLine();
-
-            Console.WriteLine(encrypt(text,cipher));
-
-            Console.ReadKey();
         }
     }
 }
