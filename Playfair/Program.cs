@@ -42,14 +42,6 @@ namespace Playfair
                    }
                    */
 
-
-
-
-
-
-
-
-
         class Plain
         {
             int x1, x2, y1, y2;
@@ -82,57 +74,90 @@ namespace Playfair
 
             static string encrypt(String text, Playfair cipher)
             {
+
                 ArrayList list = new ArrayList();
                 list.Add(text[0]);
+                int lastSpace;
                 for (int c = 1; c < text.Length; c++)
                 {
+                    if(text[c] == ' ')
+                    {
+                        lastSpace = c;
+                        break;
+                    }
+                }
+                    for (int c = 1; c < text.Length; c++)
+                {
+
                     if (text[c] == text[c - 1])
                     {
                         list.Add('x');
                         list.Add(text[c - 1]);
                     }
-                    else list.Add(text[c]);
+                    else if (text[c] == ' ')
+                        list.Add(' ');
+                    else if (text[c] == 'j')
+                    {
+                        list.Add('i');
+                    }
+                    
+                    
+                    else
+                    {
+                        list.Add(text[c]);
+                        if (c % 2 == 0 && text[c+1] == ' ' )
+                        {
+                            list.Add('x');
+                        }
+                    }
                 }
 
+
                 String plaintext = string.Join("", list.ToArray());
-                Plain plain = new Plain();
+
                 List<Plain> listPlains = new List<Plain>();
                 int l;
-                for (int c = 0; c < plaintext.Length; c++)
+                for (int c = 1; c < plaintext.Length; c++)
                 {
-                    if (c % 2 == 0)
+                    if (c % 2 == 1 )
                     {
+                        Plain plain = new Plain();
                         l = c;
                         for (int i = 0; i < 5; i++)
                         {
                             for (int j = 0; j < 5; j++)
-                            {
-                                if (plaintext[c] == cipher.getTab()[i, j])
+                            {               //parzysta                 //nieparzysta
+                                if (plaintext[c - 1] == ' ' && plaintext[c] == cipher.getTab()[i, j])
                                 {
-                                    plain.val1 = plaintext[c];
-                                    plain.set1(i, j);
-                                    if (plaintext[l] == '\n')
-                                        plain.val2 = 'x';
-                                    else
-                                    {
-                                        plain.val2 = plaintext[c + 1];
-                                        plain.set2(i + 1, j + 1);
-                                        
-                                    }
+                                    plain.val1 = ' ';
+                                    plain.val2 = plaintext[c];
                                     listPlains.Add(plain);
-
                                 }
+                                else if (plaintext[c - 1] == cipher.getTab()[i, j] && plaintext[c] == ' ')
+                                {
+                                    plain.val1 = plaintext[c - 1];
+                                    plain.val2 = ' ';
+                                    listPlains.Add(plain);
+                                }
+                                else if (plaintext[c - 1] == cipher.getTab()[i, j])
+                                {
+                                    plain.val1 = plaintext[c - 1];
+                                    plain.set1(i, j);
+                                    plain.val2 = plaintext[c];
+                                    plain.set2(i, j);
+                                    listPlains.Add(plain);
+                                }
+                                l = c;
                             }
                         }
-                        
                     }
                 }
-                String encryptedString = null;
+            
+                String encryptedString =null;
 
                 foreach (Plain p in listPlains)
-                {
-                    encryptedString = string.Join("", p.val1);
-                    encryptedString = string.Join("", p.val2);
+                { 
+                    encryptedString = encryptedString + string.Join("", p.val1.ToString()) + string.Join("", p.val2.ToString());
                 }
 
 
@@ -152,7 +177,7 @@ namespace Playfair
                 string text = Console.ReadLine();
 
                 Console.WriteLine(encrypt(text, cipher));
-
+                
                 Console.ReadKey();
             }
         }
