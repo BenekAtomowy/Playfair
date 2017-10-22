@@ -23,7 +23,11 @@ namespace Playfair
             Console.WriteLine("|" + tab[4, 0] + "|" + tab[4, 1] + "|" + tab[4, 2] + "|" + tab[4, 3] + "|" + tab[4, 4] + "|");
         }
 
-        char[,] tab = new char[5, 5] { { 'k', 'l', 'u', 'c', 'z' }, { 'a', 'b', 'd', 'e', 'f' }, { 'g', 'h', 'i', 'm', 'n' }, { 'o', 'p', 'q', 'r', 's' }, { 't', 'v', 'w', 'x', 'y' } };
+        char[,] tab = new char[5, 5] { { 'k', 'l', 'u', 'c', 'z' }, 
+                                       { 'a', 'b', 'd', 'e', 'f' }, 
+                                       { 'g', 'h', 'i', 'm', 'n' }, 
+                                       { 'o', 'p', 'q', 'r', 's' }, 
+                                       { 't', 'v', 'w', 'x', 'y' } };
         public char[,] getTab()
         {
             return tab;
@@ -44,19 +48,19 @@ namespace Playfair
 
         class Plain
         {
-            int x1, x2, y1, y2;
-            public char val1, val2;
-            public void set1(int i, int j)
-            {
-                x1 = i;
-                y1 = j;
-            }
-            public void set2(int i, int j)
-            {
-                x2 = i;
-                y2 = j;
-            }
+            private int x1, y1, x2, y2;
+            private char val1, val2;
+            public int getx1() { return x1; }
+            public int getx2() { return x2; }
+            public int gety1() { return y1; }
+            public int gety2() { return y2; }
 
+            public void setx1(int l) { x1 = l; }
+            public void setx2(int l) { x2 = l; }
+            public void sety1(int l) { y1 = l; }
+            public void sety2(int l) { y2 = l; }
+
+       
 
             public char getval1()
             {
@@ -66,6 +70,52 @@ namespace Playfair
             {
                 return val2;
             }
+            public void setval1(char val)
+            {
+                val1 = val;
+            }
+            public void setval2(char val)
+            {
+                val2 = val;
+            }
+            public void findCoordinates(Playfair cipher)
+            {
+                for (int i = 0; i < 5; i++)
+                {
+                    for (int j = 0; j < 5; j++)
+                    {
+                        if (cipher.tab[j,i] == val1)
+                        {
+                            x1 = j;
+                            y1 = i;
+                        }   
+                    }
+                }
+                for (int i = 0; i < 5; i++)
+                {
+                    for (int j = 0; j < 5; j++)
+                    {
+                        if (cipher.tab[j, i] == val2)
+                        {
+                            x2 = j;
+                            y2 = i;
+                        }
+                    }
+                }
+
+                Console.WriteLine("|"+val1 + '(' + y1 + ')' + '(' + x1 + ") "+ val2 + '(' + y2 + ')' + '(' + x2 + ')');
+            }
+
+            public void findCipherLetters(Playfair cipher)
+            {
+                val1 = cipher.getTab()[x1, y1];
+                val2 = cipher.getTab()[x2, y2];
+                Console.WriteLine("Koordynaty zaszyfrowanego tekstu: ");
+                Console.WriteLine("|" + val1 + '(' + y1 + ')' + '(' + x1 + ") " + val2 + '(' + y2 + ')' + '(' + x2 + ')'+'\n');
+
+            }
+       
+
         }
 
 
@@ -76,92 +126,121 @@ namespace Playfair
             {
 
                 ArrayList list = new ArrayList();
-                list.Add(text[0]);
-                int lastSpace;
-                for (int c = 1; c < text.Length; c++)
+                if (text[0] == 'j')
                 {
-                    if(text[c] == ' ')
-                    {
-                        lastSpace = c;
-                        break;
-                    }
+                    list.Add('i');
                 }
+                else
+                {
+                    list.Add(text[0]);
+                }
+
                     for (int c = 1; c < text.Length; c++)
                 {
-
+                    
                     if (text[c] == text[c - 1])
                     {
                         list.Add('x');
                         list.Add(text[c - 1]);
                     }
-                    else if (text[c] == ' ')
-                        list.Add(' ');
+                    else if (text[c] == ' ') { }
+                    
                     else if (text[c] == 'j')
                     {
                         list.Add('i');
                     }
-                    
-                    
                     else
                     {
                         list.Add(text[c]);
-                        if (c % 2 == 0 && text[c+1] == ' ' )
-                        {
-                            list.Add('x');
-                        }
                     }
+                }
+                if ((list.Count-1) % 2 == 0 )
+                {
+                    list.Add('x');
                 }
 
 
                 String plaintext = string.Join("", list.ToArray());
+                Console.WriteLine("Plaintext: " + plaintext);
 
                 List<Plain> listPlains = new List<Plain>();
-                int l;
                 for (int c = 1; c < plaintext.Length; c++)
                 {
                     if (c % 2 == 1 )
                     {
                         Plain plain = new Plain();
-                        l = c;
                         for (int i = 0; i < 5; i++)
                         {
                             for (int j = 0; j < 5; j++)
-                            {               //parzysta                 //nieparzysta
-                                if (plaintext[c - 1] == ' ' && plaintext[c] == cipher.getTab()[i, j])
-                                {
-                                    plain.val1 = ' ';
-                                    plain.val2 = plaintext[c];
-                                    listPlains.Add(plain);
-                                }
-                                else if (plaintext[c - 1] == cipher.getTab()[i, j] && plaintext[c] == ' ')
-                                {
-                                    plain.val1 = plaintext[c - 1];
-                                    plain.val2 = ' ';
-                                    listPlains.Add(plain);
-                                }
-                                else if (plaintext[c - 1] == cipher.getTab()[i, j])
-                                {
-                                    plain.val1 = plaintext[c - 1];
-                                    plain.set1(i, j);
-                                    plain.val2 = plaintext[c];
-                                    plain.set2(i, j);
-                                    listPlains.Add(plain);
-                                }
-                                l = c;
-                            }
+                            {
+                                plain.setval1(plaintext[c-1]);
+                                plain.setval2(plaintext[c]);}
                         }
+                        listPlains.Add(plain);
                     }
                 }
-            
-                String encryptedString =null;
 
+                List<Plain> listEncrypted = new List<Plain>();
                 foreach (Plain p in listPlains)
-                { 
-                    encryptedString = encryptedString + string.Join("", p.val1.ToString()) + string.Join("", p.val2.ToString());
+                {
+                    p.findCoordinates(cipher);
+                    if (p.getx1() == p.getx2())  //ten sam wiersz
+                    {
+                        if (p.gety1() == 4)
+                        {
+                            p.sety2(p.gety2() + 1);
+                            p.sety1(0);
+                        }
+                        else if (p.gety2() == 4)
+                        {
+                            p.sety2(0);
+                            p.sety1(p.gety2() + 1);   
+                        }
+                        else
+                        {
+                            p.sety1(p.gety1() + 1);
+                            p.sety2(p.gety2() + 1);
+                        }
+                    }
+                    else if (p.gety1() == p.gety2())  //ta sama kolumna
+                    {
+                        if (p.getx2() == 4)
+                        {
+                            p.setx2(0);
+                            p.setx1(p.getx1() + 1);
+                        }
+                        else if(p.getx1() == 4)
+                        {
+                            p.setx2(p.getx2() + 1);
+                            p.setx1(0);
+                            
+                        }
+                        else
+                        {
+                            p.setx1(p.getx1() + 1);
+                            p.setx2(p.getx2() + 1);
+                        }
+
+                    }
+                    else                                    ///reszta
+                    {
+                        int buf = p.gety1();
+                        p.sety1 ( p.gety2());
+                        p.sety2 ( buf);
+
+                    }
+
+                    p.findCipherLetters(cipher);
+
+                    listEncrypted.Add(p);
                 }
 
+                String encryptedString =null;
 
-
+                foreach (Plain p in listEncrypted)
+                { 
+                    encryptedString = encryptedString + string.Join("", p.getval1().ToString()) + string.Join("", p.getval2().ToString());
+                }
                 return encryptedString;
             }
 
@@ -174,10 +253,15 @@ namespace Playfair
                 Playfair cipher = new Playfair();
                 cipher.show();
                 Console.WriteLine("\nPodaj napis do zaszyfrowania");
-                string text = Console.ReadLine();
+                //string text = Console.ReadLine();
 
-                Console.WriteLine(encrypt(text, cipher));
-                
+                Console.WriteLine(encrypt("assess", cipher)+"\n-----------------------------------------");
+                Console.WriteLine(encrypt("jebac", cipher) + "\n-----------------------------------------");
+                Console.WriteLine(encrypt("jebac bartoszka", cipher) + "\n-----------------------------------------");
+                Console.WriteLine(encrypt("asses", cipher) + "\n-----------------------------------------");
+                Console.WriteLine(encrypt("nie pytaj mnie o nia znasz ja doskonale budzisz sie codziennie ona robi ci sniadanie", cipher));
+
+
                 Console.ReadKey();
             }
         }
