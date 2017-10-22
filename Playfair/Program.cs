@@ -124,7 +124,7 @@ namespace Playfair
 
             static string encrypt(String text, Playfair cipher)
             {
-
+                text =text.ToLower();
                 ArrayList list = new ArrayList();
                 if (text[0] == 'j')
                 {
@@ -138,12 +138,8 @@ namespace Playfair
                     for (int c = 1; c < text.Length; c++)
                 {
                     
-                    if (text[c] == text[c - 1])
-                    {
-                        list.Add('x');
-                        list.Add(text[c - 1]);
-                    }
-                    else if (text[c] == ' ') { }
+                    
+                    if (text[c] == ' ' || text[c] == ',' || text[c] == '.' || text[c] == '?' || text[c] == '!' || text[c] == ':' || text[c] == ';' || text[c] == '*' || text[c] == '(' || text[c] == ')' || text[c] == '"' || text[c] == '\n') { }
                     
                     else if (text[c] == 'j')
                     {
@@ -154,7 +150,15 @@ namespace Playfair
                         list.Add(text[c]);
                     }
                 }
-                if ((list.Count-1) % 2 == 0 )
+
+                for (int c = 1; c < list.Count; c++)
+                {
+                    if (list[c-1].ToString() == list[c].ToString())
+                    {
+                        list.Insert(c,'x');
+                    }
+                }
+                    if ((list.Count-1) % 2 == 0 )
                 {
                     list.Add('x');
                 }
@@ -169,13 +173,10 @@ namespace Playfair
                     if (c % 2 == 1 )
                     {
                         Plain plain = new Plain();
-                        for (int i = 0; i < 5; i++)
-                        {
-                            for (int j = 0; j < 5; j++)
-                            {
-                                plain.setval1(plaintext[c-1]);
-                                plain.setval2(plaintext[c]);}
-                        }
+                        
+                        plain.setval1(plaintext[c-1]);
+                        plain.setval2(plaintext[c]);
+                        
                         listPlains.Add(plain);
                     }
                 }
@@ -244,7 +245,99 @@ namespace Playfair
                 return encryptedString;
             }
 
+            static string decrypt(String encryptedString, Playfair cipher)
+            {
+                encryptedString = encryptedString.ToLower();
+                string decryptedString=null;
 
+                List<Plain> listPlains = new List<Plain>();
+                for (int c = 1; c < encryptedString.Length; c++)
+                {
+                    if (c % 2 == 1)
+                    {
+                        Plain plain = new Plain();
+
+                        plain.setval1(encryptedString[c - 1]);
+                        plain.setval2(encryptedString[c]);
+
+                        listPlains.Add(plain);
+                    }
+                }
+
+
+
+                List<Plain> listDecrypted = new List<Plain>();
+                foreach (Plain p in listPlains)
+                {
+                    p.findCoordinates(cipher);
+                        if (p.getx1() == p.getx2())  //ten sam wiersz
+                        {
+                            if (p.gety1() == 0)
+                            {
+                                p.sety2(p.gety2() -1);
+                                p.sety1(4);
+                            }
+                            else if (p.gety2() == 0)
+                            {
+                                p.sety2(4);
+                                p.sety1(p.gety2() -1);
+                            }
+                            else
+                            {
+                                p.sety1(p.gety1() -1);
+                                p.sety2(p.gety2() - 1);
+                            }
+                        }
+                        else if (p.gety1() == p.gety2())  //ta sama kolumna
+                        {
+                            if (p.getx2() == 0)
+                            {
+                                p.setx2(4);
+                                p.setx1(p.getx1() - 1);
+                            }
+                            else if (p.getx1() == 0)
+                            {
+                                p.setx2(p.getx2() - 1);
+                                p.setx1(4);
+
+                            }
+                            else
+                            {
+                                p.setx1(p.getx1() - 1);
+                                p.setx2(p.getx2() - 1);
+                            }
+
+                        }
+                        else                                    ///reszta
+                        {
+                            int buf = p.gety1();
+                            p.sety1(p.gety2());
+                            p.sety2(buf);
+                        }
+
+                        p.findCipherLetters(cipher);
+
+                        listDecrypted.Add(p);   
+                }
+                foreach(Plain p in listDecrypted)
+                {
+                    decryptedString = decryptedString + string.Join("", p.getval1().ToString()) + string.Join("", p.getval2().ToString());
+                }
+                for(int c = 1; c<decryptedString.Length;c++)
+                {
+                    if (c > 0 && c < decryptedString.Length)
+                    {
+                        if (decryptedString[c] == 'x' && decryptedString[c - 1] == decryptedString[c + 1])
+                        {
+                            decryptedString = decryptedString.Replace("x","");
+                        }
+
+                    }
+                }
+
+
+                return decryptedString;
+            }
 
 
 
@@ -254,12 +347,25 @@ namespace Playfair
                 cipher.show();
                 Console.WriteLine("\nPodaj napis do zaszyfrowania");
                 //string text = Console.ReadLine();
-
-                Console.WriteLine(encrypt("assess", cipher)+"\n-----------------------------------------");
-                Console.WriteLine(encrypt("jebac", cipher) + "\n-----------------------------------------");
-                Console.WriteLine(encrypt("jebac bartoszka", cipher) + "\n-----------------------------------------");
-                Console.WriteLine(encrypt("asses", cipher) + "\n-----------------------------------------");
-                Console.WriteLine(encrypt("nie pytaj mnie o nia znasz ja doskonale budzisz sie codziennie ona robi ci sniadanie", cipher));
+                string encryptedText = encrypt("as. sa", cipher);
+                string decryptedText = decrypt(encryptedText, cipher);
+                Console.WriteLine(encryptedText + "\n-----------------------------------------");
+                Console.WriteLine(decryptedText + "\n-----------------------------------------");
+                encryptedText = encrypt("Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin nibh augue, suscipit a, scelerisque sed, lacinia in, mi. Cras vel lorem. Etiam pellentesque aliquet tellus. Phasellus pharetra nulla ac diam. Quisque semper justo at risus. Donec venenatis, turpis vel hendrerit interdum, dui ligula ultricies purus, sed posuere libero dui id orci. Nam congue, pede vitae dapibus aliquet, elit magna vulputate arcu, vel tempus metus leo non est. Etiam sit amet lectus quis est congue mollis. Phasellus congue lacus eget neque. Phasellus ornare, ante vitae consectetuer consequat, purus sapien ultricies dolor, et mollis pede metus eget nisi. Praesent sodales velit quis augue. Cras suscipit, urna at aliquam rhoncus, urna quam viverra nisi, in interdum massa nibh nec erat.", cipher);
+                decryptedText = decrypt(encryptedText, cipher);
+                Console.WriteLine(encryptedText + "\n-----------------------------------------");
+                Console.WriteLine(decryptedText + "\n-----------------------------------------");
+                encryptedText = encrypt("asxsesx", cipher);
+                decryptedText = decrypt(encryptedText, cipher);
+                Console.WriteLine(encryptedText + "\n-----------------------------------------");
+                Console.WriteLine(decryptedText + "\n-----------------------------------------");
+                encryptedText = encrypt("asxsess", cipher);
+                decryptedText = decrypt(encryptedText, cipher);
+                // Console.WriteLine(encrypt("assess", cipher)+"\n-----------------------------------------");
+                Console.WriteLine(encryptedText + "\n-----------------------------------------");
+                Console.WriteLine(decryptedText + "\n-----------------------------------------");
+                //Console.WriteLine(encrypt("asses", cipher) + "\n-----------------------------------------");
+                //Console.WriteLine(encrypt("nie pytaj mnie o nia znasz ja doskonale budzisz sie codziennie ona robi ci sniadanie", cipher));
 
 
                 Console.ReadKey();
